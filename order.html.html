@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>南窩綠丘 · 訂房確認產生器</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700&family=Noto+Sans+TC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#22301f;
+    --forest:#1f3a2d;
+    --moss:#4c6b45;
+    --sand:#e9e1c9;
+    --paper:#faf7ee;
+    --clay:#a15c34;
+    --line:#d8d0b4;
+    --white:#fffdf7;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Noto Sans TC', sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    min-height:100vh;
+    padding:32px 20px 60px;
+  }
+  .wrap{
+    max-width:1040px;
+    margin:0 auto;
+  }
+  .header{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:20px;
+    margin-bottom:28px;
+    padding-bottom:18px;
+    border-bottom:1.5px solid var(--line);
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  .brand-mark{
+    width:38px;height:38px;
+    border-radius:50%;
+    background:var(--forest);
+    display:flex;align-items:center;justify-content:center;
+    color:var(--sand);
+    font-family:'Noto Serif TC',serif;
+    font-weight:700;
+    font-size:16px;
+    flex-shrink:0;
+  }
+  .brand-text .eyebrow{
+    font-size:11px;
+    letter-spacing:.14em;
+    color:var(--moss);
+    font-weight:600;
+    margin-bottom:2px;
+  }
+  .brand-text h1{
+    font-family:'Noto Serif TC', serif;
+    font-size:22px;
+    font-weight:700;
+    margin:0;
+    color:var(--forest);
+    letter-spacing:.02em;
+  }
+  .header-note{
+    font-size:12.5px;
+    color:#7a7563;
+    text-align:right;
+    max-width:220px;
+    line-height:1.5;
+  }
+  .grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:28px;
+  }
+  @media (max-width:840px){
+    .grid{grid-template-columns:1fr;}
+  }
+  .panel{
+    background:var(--white);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:26px 26px 28px;
+  }
+  .panel-title{
+    font-family:'Noto Serif TC', serif;
+    font-size:15px;
+    font-weight:700;
+    color:var(--forest);
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin:0 0 18px;
+  }
+  .panel-title .leaf{
+    color:var(--clay);
+    font-size:13px;
+  }
+  label{
+    display:block;
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--moss);
+    margin:0 0 6px;
+  }
+  .field{margin-bottom:18px;}
+  input[type="date"],
+  input[type="number"],
+  select{
+    width:100%;
+    padding:10px 12px;
+    border:1px solid var(--line);
+    border-radius:9px;
+    background:var(--paper);
+    font-size:14.5px;
+    font-family:inherit;
+    color:var(--ink);
+    outline:none;
+    transition:border-color .15s ease, background .15s ease;
+    appearance:none;
+    -webkit-appearance:none;
+  }
+  select{
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%234c6b45' stroke-width='2.5'><polyline points='6 9 12 15 18 9'/></svg>");
+    background-repeat:no-repeat;
+    background-position:right 12px center;
+    padding-right:34px;
+  }
+  input:focus, select:focus{
+    border-color:var(--moss);
+    background:var(--white);
+  }
+  .row2{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+  }
+  .hint{
+    font-size:11.5px;
+    color:#948e79;
+    margin-top:5px;
+  }
+  .toggle-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:11px 13px;
+    border:1px solid var(--line);
+    border-radius:9px;
+    background:var(--paper);
+    margin-bottom:14px;
+  }
+  .toggle-row span{font-size:13.5px;font-weight:500;}
+  .switch{
+    position:relative;
+    width:38px;height:22px;
+    flex-shrink:0;
+  }
+  .switch input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer;}
+  .switch .track{
+    position:absolute;inset:0;
+    background:#cfc7ac;
+    border-radius:20px;
+    transition:background .15s ease;
+  }
+  .switch .thumb{
+    position:absolute;top:3px;left:3px;
+    width:16px;height:16px;
+    background:var(--white);
+    border-radius:50%;
+    transition:transform .15s ease;
+    box-shadow:0 1px 2px rgba(0,0,0,.2);
+  }
+  .switch input:checked + .track{background:var(--moss);}
+  .switch input:checked + .track + .thumb{transform:translateX(16px);}
+  .divider{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin:22px 0 18px;
+    color:var(--moss);
+  }
+  .divider::before,.divider::after{
+    content:"";
+    flex:1;
+    height:1px;
+    background:var(--line);
+  }
+  .divider span{font-size:11px;letter-spacing:.1em;font-weight:600;}
+
+  .output-box{
+    background:var(--forest);
+    border-radius:11px;
+    padding:20px 20px 18px;
+    color:var(--sand);
+    font-family:'JetBrains Mono', monospace;
+    font-size:13px;
+    line-height:1.85;
+    white-space:pre-wrap;
+    min-height:220px;
+    position:relative;
+  }
+  .output-box .price{
+    color:#f2e7c2;
+    font-weight:600;
+  }
+  .copy-btn{
+    margin-top:14px;
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:9px;
+    background:var(--clay);
+    color:var(--white);
+    font-family:'Noto Sans TC',sans-serif;
+    font-size:14px;
+    font-weight:700;
+    letter-spacing:.03em;
+    cursor:pointer;
+    transition:background .15s ease, transform .1s ease;
+  }
+  .copy-btn:hover{background:#8f4c28;}
+  .copy-btn:active{transform:scale(.985);}
+  .copy-btn.copied{background:var(--moss);}
+  .price-table{
+    margin-top:16px;
+    border-top:1px dashed var(--line);
+    padding-top:14px;
+  }
+  .price-table table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:12px;
+    color:#7a7563;
+  }
+  .price-table th{
+    text-align:left;
+    font-weight:600;
+    padding:4px 6px;
+    color:var(--moss);
+    border-bottom:1px solid var(--line);
+  }
+  .price-table td{
+    padding:5px 6px;
+    border-bottom:1px solid #efe9d5;
+  }
+  .footer-note{
+    text-align:center;
+    font-size:11.5px;
+    color:#a49d84;
+    margin-top:26px;
+  }
+  .room-line{
+    display:grid;
+    grid-template-columns:1fr 84px 34px;
+    gap:8px;
+    margin-bottom:10px;
+    align-items:center;
+  }
+  .room-line select, .room-line input{margin:0;}
+  .remove-line-btn{
+    width:34px;height:38px;
+    border:1px solid var(--line);
+    background:var(--paper);
+    border-radius:8px;
+    cursor:pointer;
+    color:var(--clay);
+    font-size:17px;
+    line-height:1;
+    display:flex;align-items:center;justify-content:center;
+    transition:background .15s ease;
+  }
+  .remove-line-btn:hover{background:#f0e6d6;}
+  .add-line-btn{
+    width:100%;
+    padding:10px;
+    border:1px dashed var(--moss);
+    border-radius:9px;
+    background:transparent;
+    color:var(--moss);
+    font-weight:600;
+    font-size:13px;
+    cursor:pointer;
+    margin-bottom:18px;
+    transition:background .15s ease;
+  }
+  .add-line-btn:hover{background:#f0ece0;}
+  .field-label-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    margin:0 0 6px;
+  }
+  .field-label-row label{margin:0;}
+  .reset-link{
+    background:none;
+    border:none;
+    color:var(--clay);
+    font-size:11.5px;
+    font-weight:600;
+    cursor:pointer;
+    padding:0;
+    text-decoration:underline;
+  }
+  .reset-link:hover{color:#8f4c28;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div class="brand">
+      <div class="brand-mark">綠</div>
+      <div class="brand-text">
+        <div class="eyebrow">GREENHILL · 南窩綠丘</div>
+        <h1>訂房確認產生器</h1>
+      </div>
+    </div>
+    <div class="header-note">輸入房型、間數與優惠方案，自動產出可直接傳送給客人的訂房確認訊息。</div>
+  </div>
+
+  <div class="grid">
+
+    <!-- FORM PANEL -->
+    <div class="panel">
+      <p class="panel-title"><span class="leaf">✎</span>訂房資訊</p>
+
+      <div class="field">
+        <label for="checkinDate">入住日期</label>
+        <input type="date" id="checkinDate">
+      </div>
+
+      <div class="field">
+        <label>房型（可新增多種房型，一次結算）</label>
+        <div id="roomLines"></div>
+        <button type="button" class="add-line-btn" id="addLineBtn">＋ 新增房型</button>
+      </div>
+
+      <div class="field">
+        <label for="nights">住宿晚數</label>
+        <input type="number" id="nights" min="1" value="1">
+      </div>
+
+      <div class="field">
+        <label for="promo">優惠方案</label>
+        <select id="promo"></select>
+      </div>
+
+      <div class="field" id="customPromoField" style="display:none;">
+        <label for="customPromo">自訂折扣（例如輸入 88 代表 88 折）</label>
+        <input type="number" id="customPromo" min="1" max="100" value="90">
+      </div>
+      <p class="hint" id="secondHalfHint" style="display:none;">此優惠需入住 2 晚（含）以上，第 2 晚以半價計算，第 3 晚起以原價計算。</p>
+
+      <div class="field">
+        <label for="extraBeds">加床人數（$1,000／人，不折扣）</label>
+        <input type="number" id="extraBeds" min="0" value="0">
+      </div>
+
+      <div class="toggle-row">
+        <span>加贈晚餐</span>
+        <label class="switch">
+          <input type="checkbox" id="dinnerToggle">
+          <span class="track"></span>
+          <span class="thumb"></span>
+        </label>
+      </div>
+
+      <div class="field" id="dinnerCountField" style="display:none;">
+        <label for="dinnerCount">晚餐份數</label>
+        <input type="number" id="dinnerCount" min="1" value="4">
+        <p class="hint">預設依房型建議人數 × 間數自動帶入，可自行修改。</p>
+      </div>
+
+      <div class="field">
+        <div class="field-label-row">
+          <label for="depositAmount">訂金金額</label>
+          <button type="button" class="reset-link" id="resetDepositBtn">套用建議值（30%）</button>
+        </div>
+        <input type="number" id="depositAmount" min="0" value="0">
+        <p class="hint" id="depositHint"></p>
+      </div>
+
+      <div class="price-table">
+        <table>
+          <thead><tr><th>房型</th><th>原價</th><th>建議人數</th></tr></thead>
+          <tbody id="priceTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- OUTPUT PANEL -->
+    <div class="panel">
+      <p class="panel-title"><span class="leaf">✦</span>訂房確認訊息</p>
+      <div class="output-box" id="outputBox"></div>
+      <button class="copy-btn" id="copyBtn">複製訊息</button>
+    </div>
+
+  </div>
+
+  <p class="footer-note">南窩綠丘 GreenHill · 內部訂房工具</p>
+</div>
+
+<script>
+  const ROOM_TYPES = [
+    { name: "溫馨雙人房", price: 4800, occupancy: 2 },
+    { name: "景觀雙人房", price: 5200, occupancy: 2 },
+    { name: "家庭五人房", price: 8800, occupancy: 5 },
+    { name: "樓中樓四人房", price: 7200, occupancy: 4 },
+    { name: "綠丘行旅包棟", price: 42800, occupancy: 21 }
+  ];
+
+  const PROMOS = [
+    { label: "原價（無折扣）", type: "flat", rate: 1.00 },
+    { label: "平日優惠（9折）", type: "flat", rate: 0.90 },
+    { label: "平日優惠（88折）", type: "flat", rate: 0.88 },
+    { label: "第二晚半價優惠", type: "second_half", rate: null },
+    { label: "自訂折扣", type: "custom", rate: null }
+  ];
+
+  const BANK_INFO =
+`匯款資料：
+土地銀行(代碼 005)通霄分行
+帳號  084-005-164-787
+戶名: 張秀雅
+匯款完成後，請提供匯出帳號後五碼，以利查詢`;
+
+  const nightsInput = document.getElementById('nights');
+  const promoSel = document.getElementById('promo');
+  const customPromoField = document.getElementById('customPromoField');
+  const customPromoInput = document.getElementById('customPromo');
+  const secondHalfHint = document.getElementById('secondHalfHint');
+  const extraBedsInput = document.getElementById('extraBeds');
+  const dinnerToggle = document.getElementById('dinnerToggle');
+  const dinnerCountField = document.getElementById('dinnerCountField');
+  const dinnerCountInput = document.getElementById('dinnerCount');
+  const depositAmountInput = document.getElementById('depositAmount');
+  const depositHint = document.getElementById('depositHint');
+  const resetDepositBtn = document.getElementById('resetDepositBtn');
+  const checkinDateInput = document.getElementById('checkinDate');
+  const outputBox = document.getElementById('outputBox');
+  const copyBtn = document.getElementById('copyBtn');
+  const priceTableBody = document.getElementById('priceTableBody');
+  const roomLinesContainer = document.getElementById('roomLines');
+  const addLineBtn = document.getElementById('addLineBtn');
+
+  PROMOS.forEach((p, i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = p.label;
+    promoSel.appendChild(opt);
+  });
+
+  ROOM_TYPES.forEach(r => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${r.name}</td><td>${r.price.toLocaleString()}</td><td>${r.occupancy} 人</td>`;
+    priceTableBody.appendChild(tr);
+  });
+
+  // ---- multi room-type lines ----
+  let roomLineIdSeq = 0;
+  let roomLines = [];
+
+  function addRoomLine(typeIndex, count){
+    roomLineIdSeq++;
+    roomLines.push({ id: roomLineIdSeq, typeIndex: typeIndex || 0, count: count || 1 });
+    renderRoomLines();
+    updateDinnerDefault();
+    render();
+  }
+
+  function removeRoomLine(id){
+    roomLines = roomLines.filter(l => l.id !== id);
+    if(roomLines.length === 0){
+      addRoomLine(0, 1);
+    } else {
+      renderRoomLines();
+      updateDinnerDefault();
+      render();
+    }
+  }
+
+  function renderRoomLines(){
+    roomLinesContainer.innerHTML = '';
+    roomLines.forEach(line => {
+      const row = document.createElement('div');
+      row.className = 'room-line';
+
+      const select = document.createElement('select');
+      ROOM_TYPES.forEach((r, i) => {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = r.name;
+        if(i === line.typeIndex) opt.selected = true;
+        select.appendChild(opt);
+      });
+      select.addEventListener('change', () => {
+        line.typeIndex = parseInt(select.value);
+        updateDinnerDefault();
+        render();
+      });
+
+      const countInput = document.createElement('input');
+      countInput.type = 'number';
+      countInput.min = '1';
+      countInput.value = line.count;
+      countInput.addEventListener('input', () => {
+        line.count = Math.max(1, parseInt(countInput.value) || 1);
+        updateDinnerDefault();
+        render();
+      });
+
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'remove-line-btn';
+      removeBtn.textContent = '×';
+      removeBtn.title = '移除此房型';
+      removeBtn.addEventListener('click', () => removeRoomLine(line.id));
+      if(roomLines.length <= 1) removeBtn.style.visibility = 'hidden';
+
+      row.appendChild(select);
+      row.appendChild(countInput);
+      row.appendChild(removeBtn);
+      roomLinesContainer.appendChild(row);
+    });
+  }
+
+  addLineBtn.addEventListener('click', () => addRoomLine(0, 1));
+
+  // default date = today
+  const today = new Date();
+  checkinDateInput.value = today.toISOString().slice(0,10);
+
+  function formatDate(dateStr){
+    if(!dateStr) return "";
+    const [y,m,d] = dateStr.split('-').map(Number);
+    return `${m}/${d}`;
+  }
+
+  function currentDinnerDefault(){
+    return roomLines.reduce((sum, l) => sum + ROOM_TYPES[l.typeIndex].occupancy * l.count, 0);
+  }
+
+  function updateDinnerDefault(){
+    if(!dinnerCountInput.dataset.userEdited){
+      dinnerCountInput.value = currentDinnerDefault();
+    }
+  }
+
+  dinnerCountInput.addEventListener('input', () => {
+    dinnerCountInput.dataset.userEdited = "1";
+  });
+
+  depositAmountInput.addEventListener('input', () => {
+    depositAmountInput.dataset.userEdited = "1";
+    render();
+  });
+
+  resetDepositBtn.addEventListener('click', () => {
+    delete depositAmountInput.dataset.userEdited;
+    render();
+  });
+
+  dinnerToggle.addEventListener('change', () => {
+    dinnerCountField.style.display = dinnerToggle.checked ? 'block' : 'none';
+    updateDinnerDefault();
+    render();
+  });
+
+  promoSel.addEventListener('change', () => {
+    const type = PROMOS[promoSel.value].type;
+    customPromoField.style.display = (type === 'custom') ? 'block' : 'none';
+    secondHalfHint.style.display = (type === 'second_half') ? 'block' : 'none';
+    render();
+  });
+
+  [checkinDateInput, nightsInput, customPromoInput, dinnerCountInput, extraBedsInput].forEach(el => {
+    el.addEventListener('input', () => { updateDinnerDefault(); render(); });
+    el.addEventListener('change', () => { updateDinnerDefault(); render(); });
+  });
+
+  function getRate(promo){
+    if(promo.type === 'flat') return promo.rate;
+    const custom = parseFloat(customPromoInput.value);
+    if(isNaN(custom) || custom <= 0) return 1;
+    return custom / 100;
+  }
+
+  function calcRoomLine(room, count, nights, promo){
+    let text, total;
+    if(promo.type === 'second_half'){
+      const night1 = room.price * count;
+      if(nights < 2){
+        total = night1;
+        text = `${room.price.toLocaleString()}*${count}=${total.toLocaleString()}元（未達2晚，暫以原價計算）`;
+      } else {
+        const halfUnit = Math.round(room.price * 0.5);
+        const night2 = halfUnit * count;
+        const extraNights = nights - 2;
+        const extraTotal = extraNights * room.price * count;
+        total = night1 + night2 + extraTotal;
+        let lines = [
+          `第1晚 ${room.price.toLocaleString()}*${count}=${night1.toLocaleString()}元`,
+          `第2晚（半價）${halfUnit.toLocaleString()}*${count}=${night2.toLocaleString()}元`
+        ];
+        if(extraNights > 0){
+          lines.push(`第3~${nights}晚（原價）${room.price.toLocaleString()}*${count}*${extraNights}晚=${extraTotal.toLocaleString()}元`);
+        }
+        lines.push(`小計 ${total.toLocaleString()}元`);
+        text = lines.join('\n');
+      }
+    } else {
+      const rate = getRate(promo);
+      const unitPrice = Math.round(room.price * rate);
+      const nightTotal = unitPrice * count;
+      total = nightTotal * nights;
+      text = nights > 1
+        ? `${unitPrice.toLocaleString()}*${count}*${nights}晚=${total.toLocaleString()}元`
+        : `${unitPrice.toLocaleString()}*${count}=${total.toLocaleString()}元`;
+    }
+    return { text, total };
+  }
+
+  function render(){
+    const nights = Math.max(1, parseInt(nightsInput.value) || 1);
+    const promo = PROMOS[promoSel.value];
+    const dateLabel = formatDate(checkinDateInput.value);
+    const multiType = roomLines.length > 1;
+
+    let total = 0;
+    const lineTexts = roomLines.map(line => {
+      const room = ROOM_TYPES[line.typeIndex];
+      const count = Math.max(1, line.count || 1);
+      const { text, total: lineTotal } = calcRoomLine(room, count, nights, promo);
+      total += lineTotal;
+      const prefix = multiType ? `【${room.name}${count}間】\n` : '';
+      return prefix + text;
+    });
+
+    let priceLine = lineTexts.join('\n');
+    if(multiType){
+      priceLine += `\n\n房型合計 ${total.toLocaleString()}元`;
+    }
+
+    let dinnerNote = "";
+    if(dinnerToggle.checked){
+      const dinnerCount = parseInt(dinnerCountInput.value) || currentDinnerDefault();
+      dinnerNote = `（附贈${dinnerCount}人份晚餐）`;
+    }
+
+    const roomSummary = roomLines
+      .map(l => `${ROOM_TYPES[l.typeIndex].name}${l.count}間`)
+      .join('、');
+    const stayLabel = nights > 1 ? `${dateLabel}起 ${roomSummary}，共${nights}晚` : `${dateLabel} ${roomSummary}`;
+
+    const extraBeds = Math.max(0, parseInt(extraBedsInput.value) || 0);
+    let extraBedLine = "";
+    if(extraBeds > 0){
+      const extraBedTotal = extraBeds * 1000 * nights;
+      total += extraBedTotal;
+      const nightsLabel = nights > 1 ? `*${nights}晚` : "";
+      extraBedLine = `\n加床 ${extraBeds}人*1,000${nightsLabel}=${extraBedTotal.toLocaleString()}元`;
+    }
+
+    const isOriginalPrice = promo.type === 'flat' && promo.rate === 1;
+    const priceHeader = isOriginalPrice ? '房價' : '專案優惠房價';
+    const promoLine = isOriginalPrice ? '' : `優惠方案：${promo.label}\n`;
+
+    const suggestedDeposit = Math.round(total * 0.3);
+    if(!depositAmountInput.dataset.userEdited){
+      depositAmountInput.value = suggestedDeposit;
+    }
+    const depositAmount = Math.max(0, parseInt(depositAmountInput.value) || 0);
+    depositHint.textContent = `訂單金額 ${total.toLocaleString()} 元的建議 30% 訂金為 ${suggestedDeposit.toLocaleString()} 元，可自行調整實際收取金額。`;
+
+    const message =
+`已為您保留 ${stayLabel}，${priceHeader}：
+${priceLine}${extraBedLine}${dinnerNote}
+${promoLine}訂單總金額：${total.toLocaleString()}元
+應付訂金：${depositAmount.toLocaleString()}元
+請於完成訂房手續後三日內完成訂金匯款
+
+${BANK_INFO}`;
+
+    outputBox.textContent = message;
+  }
+
+  function selectOutputBoxText(){
+    const range = document.createRange();
+    range.selectNodeContents(outputBox);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+
+  function showCopySuccess(){
+    copyBtn.textContent = "已複製 ✓";
+    copyBtn.classList.add('copied');
+    setTimeout(() => {
+      copyBtn.textContent = "複製訊息";
+      copyBtn.classList.remove('copied');
+    }, 1600);
+  }
+
+  function showCopyFailure(){
+    selectOutputBoxText();
+    copyBtn.textContent = "已選取文字，請長按貼上";
+    setTimeout(() => {
+      copyBtn.textContent = "複製訊息";
+    }, 2400);
+  }
+
+  function fallbackCopy(text){
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.setAttribute('readonly', '');
+    textarea.style.position = 'fixed';
+    textarea.style.top = '0';
+    textarea.style.left = '-9999px';
+    document.body.appendChild(textarea);
+    const originalRange = document.getSelection().rangeCount > 0 ? document.getSelection().getRangeAt(0) : null;
+    textarea.focus();
+    textarea.select();
+    textarea.setSelectionRange(0, textarea.value.length);
+    let succeeded = false;
+    try {
+      succeeded = document.execCommand('copy');
+    } catch (err) {
+      succeeded = false;
+    }
+    document.body.removeChild(textarea);
+    if(originalRange){
+      const sel = document.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(originalRange);
+    }
+    if(succeeded){
+      showCopySuccess();
+    } else {
+      showCopyFailure();
+    }
+  }
+
+  copyBtn.addEventListener('click', () => {
+    const text = outputBox.textContent;
+    if(navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext){
+      navigator.clipboard.writeText(text).then(showCopySuccess).catch(() => fallbackCopy(text));
+    } else {
+      fallbackCopy(text);
+    }
+  });
+
+  addRoomLine(0, 1);
+  updateDinnerDefault();
+  render();
+</script>
+</body>
+</html>
