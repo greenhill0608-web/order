@@ -365,8 +365,41 @@
       <p class="hint" id="secondHalfHint" style="display:none;">此優惠需入住 2 晚（含）以上，第 2 晚以半價計算，第 3 晚起以原價計算。</p>
 
       <div class="field">
-        <label for="extraBeds">加床人數（$1,000／人，不折扣）</label>
-        <input type="number" id="extraBeds" min="0" value="0">
+        <label>加床（不套用折扣）</label>
+        <div class="row2">
+          <div>
+            <label for="extraBedsAdult" style="font-weight:400;font-size:11.5px;">大人（$1,200／人）</label>
+            <input type="number" id="extraBedsAdult" min="0" value="0">
+          </div>
+          <div>
+            <label for="extraBedsChild" style="font-weight:400;font-size:11.5px;">小孩（$900／人）</label>
+            <input type="number" id="extraBedsChild" min="0" value="0">
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>加購項目（不套用折扣）</label>
+        <div class="row2" style="margin-bottom:10px;">
+          <div>
+            <label for="dinnerAddonQty" style="font-weight:400;font-size:11.5px;">綠丘夕食加購 份數</label>
+            <input type="number" id="dinnerAddonQty" min="0" value="0">
+          </div>
+          <div>
+            <label for="dinnerAddonPrice" style="font-weight:400;font-size:11.5px;">單價（可自訂）</label>
+            <input type="number" id="dinnerAddonPrice" min="0" value="680">
+          </div>
+        </div>
+        <div class="row2">
+          <div>
+            <label for="picnicAddonQty" style="font-weight:400;font-size:11.5px;">雙人野餐套組 份數</label>
+            <input type="number" id="picnicAddonQty" min="0" value="0">
+          </div>
+          <div>
+            <label for="picnicAddonPrice" style="font-weight:400;font-size:11.5px;">單價（可自訂）</label>
+            <input type="number" id="picnicAddonPrice" min="0" value="980">
+          </div>
+        </div>
       </div>
 
       <div class="toggle-row">
@@ -442,7 +475,12 @@
   const customPromoField = document.getElementById('customPromoField');
   const customPromoInput = document.getElementById('customPromo');
   const secondHalfHint = document.getElementById('secondHalfHint');
-  const extraBedsInput = document.getElementById('extraBeds');
+  const extraBedsAdultInput = document.getElementById('extraBedsAdult');
+  const extraBedsChildInput = document.getElementById('extraBedsChild');
+  const dinnerAddonQtyInput = document.getElementById('dinnerAddonQty');
+  const dinnerAddonPriceInput = document.getElementById('dinnerAddonPrice');
+  const picnicAddonQtyInput = document.getElementById('picnicAddonQty');
+  const picnicAddonPriceInput = document.getElementById('picnicAddonPrice');
   const dinnerToggle = document.getElementById('dinnerToggle');
   const dinnerCountField = document.getElementById('dinnerCountField');
   const dinnerCountInput = document.getElementById('dinnerCount');
@@ -586,7 +624,7 @@
     render();
   });
 
-  [checkinDateInput, nightsInput, customPromoInput, dinnerCountInput, extraBedsInput].forEach(el => {
+  [checkinDateInput, nightsInput, customPromoInput, dinnerCountInput, extraBedsAdultInput, extraBedsChildInput, dinnerAddonQtyInput, dinnerAddonPriceInput, picnicAddonQtyInput, picnicAddonPriceInput].forEach(el => {
     el.addEventListener('input', () => { updateDinnerDefault(); render(); });
     el.addEventListener('change', () => { updateDinnerDefault(); render(); });
   });
@@ -665,13 +703,43 @@
       .join('、');
     const stayLabel = nights > 1 ? `${dateLabel}起 ${roomSummary}，共${nights}晚` : `${dateLabel} ${roomSummary}`;
 
-    const extraBeds = Math.max(0, parseInt(extraBedsInput.value) || 0);
+    const extraBedAdults = Math.max(0, parseInt(extraBedsAdultInput.value) || 0);
+    const extraBedChildren = Math.max(0, parseInt(extraBedsChildInput.value) || 0);
     let extraBedLine = "";
-    if(extraBeds > 0){
-      const extraBedTotal = extraBeds * 1000 * nights;
-      total += extraBedTotal;
+    if(extraBedAdults > 0 || extraBedChildren > 0){
       const nightsLabel = nights > 1 ? `*${nights}晚` : "";
-      extraBedLine = `\n加床 ${extraBeds}人*1,000${nightsLabel}=${extraBedTotal.toLocaleString()}元`;
+      let bedLines = [];
+      if(extraBedAdults > 0){
+        const adultTotal = extraBedAdults * 1200 * nights;
+        total += adultTotal;
+        bedLines.push(`加床（大人）${extraBedAdults}人*1,200${nightsLabel}=${adultTotal.toLocaleString()}元`);
+      }
+      if(extraBedChildren > 0){
+        const childTotal = extraBedChildren * 900 * nights;
+        total += childTotal;
+        bedLines.push(`加床（小孩）${extraBedChildren}人*900${nightsLabel}=${childTotal.toLocaleString()}元`);
+      }
+      extraBedLine = '\n' + bedLines.join('\n');
+    }
+
+    const dinnerAddonQty = Math.max(0, parseInt(dinnerAddonQtyInput.value) || 0);
+    const dinnerAddonPrice = Math.max(0, parseInt(dinnerAddonPriceInput.value) || 0);
+    const picnicAddonQty = Math.max(0, parseInt(picnicAddonQtyInput.value) || 0);
+    const picnicAddonPrice = Math.max(0, parseInt(picnicAddonPriceInput.value) || 0);
+    let addonLine = "";
+    let addonLines = [];
+    if(dinnerAddonQty > 0){
+      const dinnerAddonTotal = dinnerAddonQty * dinnerAddonPrice;
+      total += dinnerAddonTotal;
+      addonLines.push(`綠丘夕食加購 ${dinnerAddonPrice.toLocaleString()}*${dinnerAddonQty}=${dinnerAddonTotal.toLocaleString()}元`);
+    }
+    if(picnicAddonQty > 0){
+      const picnicAddonTotal = picnicAddonQty * picnicAddonPrice;
+      total += picnicAddonTotal;
+      addonLines.push(`雙人野餐套組 ${picnicAddonPrice.toLocaleString()}*${picnicAddonQty}=${picnicAddonTotal.toLocaleString()}元`);
+    }
+    if(addonLines.length > 0){
+      addonLine = '\n' + addonLines.join('\n');
     }
 
     const isOriginalPrice = promo.type === 'flat' && promo.rate === 1;
@@ -687,12 +755,14 @@
 
     const message =
 `已為您保留 ${stayLabel}，${priceHeader}：
-${priceLine}${extraBedLine}${dinnerNote}
+${priceLine}${extraBedLine}${addonLine}${dinnerNote}
 ${promoLine}訂單總金額：${total.toLocaleString()}元
 應付訂金：${depositAmount.toLocaleString()}元
 請於完成訂房手續後三日內完成訂金匯款
 
-${BANK_INFO}`;
+${BANK_INFO}
+
+感謝您`;
 
     outputBox.textContent = message;
   }
