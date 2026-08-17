@@ -443,6 +443,18 @@
 
   </div>
 
+  <div class="panel" style="margin-top:28px;">
+    <p class="panel-title"><span class="leaf">✉</span>客戶報價單格式</p>
+    <div class="output-box" id="quoteOutputBox"></div>
+    <button class="copy-btn" id="quoteCopyBtn">複製報價單</button>
+  </div>
+
+  <div class="panel" style="margin-top:28px;">
+    <p class="panel-title"><span class="leaf">📋</span>資料回傳範本</p>
+    <div class="output-box" id="infoTemplateBox"></div>
+    <button class="copy-btn" id="infoTemplateCopyBtn">複製資料回傳範本</button>
+  </div>
+
   <p class="footer-note">南窩綠丘 GreenHill · 內部訂房工具</p>
 </div>
 
@@ -490,6 +502,10 @@
   const checkinDateInput = document.getElementById('checkinDate');
   const outputBox = document.getElementById('outputBox');
   const copyBtn = document.getElementById('copyBtn');
+  const quoteOutputBox = document.getElementById('quoteOutputBox');
+  const quoteCopyBtn = document.getElementById('quoteCopyBtn');
+  const infoTemplateBox = document.getElementById('infoTemplateBox');
+  const infoTemplateCopyBtn = document.getElementById('infoTemplateCopyBtn');
   const priceTableBody = document.getElementById('priceTableBody');
   const roomLinesContainer = document.getElementById('roomLines');
   const addLineBtn = document.getElementById('addLineBtn');
@@ -687,6 +703,13 @@
       return prefix + text;
     });
 
+    const quoteLineTexts = roomLines.map(line => {
+      const room = ROOM_TYPES[line.typeIndex];
+      const count = Math.max(1, line.count || 1);
+      const { text } = calcRoomLine(room, count, nights, promo);
+      return `${room.name} ${count}間\n${text}`;
+    });
+
     let priceLine = lineTexts.join('\n');
     if(multiType){
       priceLine += `\n\n房型合計 ${total.toLocaleString()}元`;
@@ -765,34 +788,67 @@ ${BANK_INFO}
 感謝您`;
 
     outputBox.textContent = message;
+
+    const quoteStayLabel = nights > 1 ? `${dateLabel}起，共${nights}晚` : `${dateLabel}`;
+    const quoteItems = [quoteLineTexts.join('\n'), extraBedLine.trim(), addonLine.trim()].filter(Boolean).join('\n\n');
+    const quotePromoLine = isOriginalPrice ? '' : `\n適用優惠：${promo.label}`;
+    const quoteDinnerLine = dinnerNote ? `\n${dinnerNote}` : '';
+
+    const quoteMessage =
+`入住日期：${quoteStayLabel}
+
+${quoteItems}${quoteDinnerLine}${quotePromoLine}
+
+總金額：NT$ ${total.toLocaleString()}`;
+
+    quoteOutputBox.textContent = quoteMessage;
+
+    infoTemplateBox.textContent =
+`⚠️若已確定房型及人數，請提供以下資訊
+⚠️以資料回傳時間做為訂房保留順位
+
+🔸完整資料🔸
+姓名：
+電話：
+電子信箱：
+入住日期：　　退房日期：
+預訂房型/間數：${roomSummary}
+人數（大人：　　小孩：　　）
+早餐素食人數：
+
+✅匯款資訊於「完整資料」回傳後提供`;
   }
 
-  function selectOutputBoxText(){
+  function selectBoxText(box){
     const range = document.createRange();
-    range.selectNodeContents(outputBox);
+    range.selectNodeContents(box);
     const sel = window.getSelection();
     sel.removeAllRanges();
     sel.addRange(range);
   }
 
-  function showCopySuccess(){
-    copyBtn.textContent = "已複製 ✓";
-    copyBtn.classList.add('copied');
+  function showCopySuccess(btn){
+    const original = btn.dataset.defaultLabel || btn.textContent;
+    btn.dataset.defaultLabel = original;
+    btn.textContent = "已複製 ✓";
+    btn.classList.add('copied');
     setTimeout(() => {
-      copyBtn.textContent = "複製訊息";
-      copyBtn.classList.remove('copied');
+      btn.textContent = original;
+      btn.classList.remove('copied');
     }, 1600);
   }
 
-  function showCopyFailure(){
-    selectOutputBoxText();
-    copyBtn.textContent = "已選取文字，請長按貼上";
+  function showCopyFailure(btn, box){
+    const original = btn.dataset.defaultLabel || btn.textContent;
+    btn.dataset.defaultLabel = original;
+    selectBoxText(box);
+    btn.textContent = "已選取文字，請長按貼上";
     setTimeout(() => {
-      copyBtn.textContent = "複製訊息";
+      btn.textContent = original;
     }, 2400);
   }
 
-  function fallbackCopy(text){
+  function fallbackCopy(text, btn, box){
     const textarea = document.createElement('textarea');
     textarea.value = text;
     textarea.setAttribute('readonly', '');
@@ -817,20 +873,27 @@ ${BANK_INFO}
       sel.addRange(originalRange);
     }
     if(succeeded){
-      showCopySuccess();
+      showCopySuccess(btn);
     } else {
-      showCopyFailure();
+      showCopyFailure(btn, box);
     }
   }
 
-  copyBtn.addEventListener('click', () => {
-    const text = outputBox.textContent;
-    if(navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext){
-      navigator.clipboard.writeText(text).then(showCopySuccess).catch(() => fallbackCopy(text));
-    } else {
-      fallbackCopy(text);
-    }
-  });
+  function attachCopyHandler(btn, box){
+    btn.addEventListener('click', () => {
+      const text = box.textContent;
+      if(navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext){
+        navigator.clipboard.writeText(text).then(() => showCopySuccess(btn)).catch(() => fallbackCopy(text, btn, box));
+      } else {
+        fallbackCopy(text, btn, box);
+      }
+    });
+  }
+
+  attachCopyHandler(copyBtn, outputBox);
+  attachCopyHandler(quoteCopyBtn, quoteOutputBox);
+
+  infoTemplateCopyBtn && attachCopyHandler(infoTemplateCopyBtn, infoTemplateBox);
 
   addRoomLine(0, 1);
   updateDinnerDefault();
